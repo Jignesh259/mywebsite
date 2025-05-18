@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Computer Science Quiz</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
+      padding: 30px;
+      margin: 0;
+    }
+
+    .quiz-container {
+      max-width: 800px;
+      margin: auto;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .question {
+      margin-bottom: 25px;
+      animation: slideInLeft 0.6s ease forwards;
+      opacity: 0; /* start hidden, animation will reveal */
+    }
+
+    /* Staggered animation delays will be set dynamically by JS */
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .question p {
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin-left: 15px;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+
+    #submitBtn {
+      display: block;
+      margin: 30px auto;
+      padding: 12px 28px;
+      background-color: #00c6ff;
+      border: none;
+      color: white;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.5s;
+      position: relative;
+    }
+
+    #submitBtn:hover:not(.loading) {
+      background-color: #0072ff;
+    }
+
+    button.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    button.loading::after {
+      content: '';
+      border: 3px solid #fff;
+      border-top: 3px solid #0072ff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    #result {
+      text-align: center;
+      font-size: 20px;
+      padding-top: 20px;
+      display: none;
+    }
+
+    .correct {
+      color: #90ee90;
+    }
+
+    .wrong {
+      color: #ffcccb;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>🧠 Computer Science Quiz</h1>
+    <form id="quizForm"></form>
+    <button id="submitBtn" onclick="submitQuiz()">Submit Quiz</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "What does CPU stand for?", options: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Control Processing Unit"], answer: "Central Processing Unit" },
+      { question: "Which is not an operating system?", options: ["Windows", "Linux", "Oracle", "MacOS"], answer: "Oracle" },
+      { question: "What does RAM stand for?", options: ["Read Access Memory", "Random Access Memory", "Rapid Access Memory", "Run Accept Memory"], answer: "Random Access Memory" },
+      { question: "Which company developed Java?", options: ["Sun Microsystems", "Oracle", "Microsoft", "IBM"], answer: "Sun Microsystems" },
+      { question: "What is the extension of a Python file?", options: [".java", ".py", ".txt", ".exe"], answer: ".py" },
+      { question: "Which language is used for web apps?", options: ["PHP", "Python", "JavaScript", "All"], answer: "All" },
+      { question: "What is a loop that never ends called?", options: ["While Loop", "Infinite Loop", "For Loop", "Do-While Loop"], answer: "Infinite Loop" },
+      { question: "HTML stands for?", options: ["Hyper Text Markup Language", "HighText Machine Language", "Hyper Tabular Markup Language", "None"], answer: "Hyper Text Markup Language" },
+      { question: "Which symbol is used for comments in Python?", options: ["//", "#", "/* */", "<!-- -->"], answer: "#" },
+      { question: "Which is a version control system?", options: ["Git", "GIMP", "GITEX", "GMail"], answer: "Git" },
+      { question: "Which one is not a programming language?", options: ["HTML", "Python", "C++", "C"], answer: "HTML" },
+      { question: "Which is used to style web pages?", options: ["HTML", "CSS", "JQuery", "XML"], answer: "CSS" },
+      { question: "What is the purpose of DNS?", options: ["Store data", "Provide security", "Translate domain names to IP", "Manage passwords"], answer: "Translate domain names to IP" },
+      { question: "What is the default port of HTTP?", options: ["443", "80", "21", "25"], answer: "80" },
+      { question: "Who invented the WWW?", options: ["Tim Berners-Lee", "Bill Gates", "Steve Jobs", "Charles Babbage"], answer: "Tim Berners-Lee" },
+      { question: "What does GUI stand for?", options: ["Graphical User Interface", "Global User Interface", "Graph User Interface", "None"], answer: "Graphical User Interface" },
+      { question: "Which company owns Android?", options: ["Apple", "Microsoft", "Google", "Samsung"], answer: "Google" },
+      { question: "Which file format is used for videos?", options: [".jpg", ".png", ".mp4", ".gif"], answer: ".mp4" },
+      { question: "What is the brain of the computer?", options: ["RAM", "Motherboard", "CPU", "GPU"], answer: "CPU" },
+      { question: "Which of the following is an output device?", options: ["Keyboard", "Scanner", "Mouse", "Monitor"], answer: "Monitor" },
+      { question: "What is phishing?", options: ["A cyber attack", "Programming", "Gaming", "None"], answer: "A cyber attack" },
+      { question: "Which protocol is used to send emails?", options: ["HTTP", "FTP", "SMTP", "IP"], answer: "SMTP" },
+      { question: "Which is a NoSQL database?", options: ["MySQL", "Oracle", "MongoDB", "PostgreSQL"], answer: "MongoDB" },
+      { question: "Which device connects a network to the internet?", options: ["Switch", "Router", "Hub", "Bridge"], answer: "Router" },
+      { question: "Which is used to build mobile apps?", options: ["React Native", "Vue", "Laravel", "Django"], answer: "React Native" },
+      { question: "Which language is best for AI?", options: ["Java", "Python", "C", "PHP"], answer: "Python" },
+      { question: "Which software is used for designing?", options: ["Photoshop", "Excel", "PowerPoint", "Notepad"], answer: "Photoshop" },
+      { question: "The smallest unit of data?", options: ["Byte", "Kilobyte", "Bit", "Megabyte"], answer: "Bit" },
+      { question: "Which of these is a search engine?", options: ["Chrome", "Google", "Facebook", "Gmail"], answer: "Google" },
+      { question: "What is a firewall?", options: ["Software", "Hardware", "Both", "None"], answer: "Both" },
+      { question: "Which programming language runs in browser?", options: ["Java", "Python", "C#", "JavaScript"], answer: "JavaScript" },
+      { question: "What is IoT?", options: ["Internet of Tech", "Internet of Things", "Internal of Things", "Input of Technology"], answer: "Internet of Things" },
+      { question: "What does CSS stand for?", options: ["Cascading Style Sheets", "Creative Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"], answer: "Cascading Style Sheets" },
+      { question: "Which one is a backend language?", options: ["HTML", "CSS", "Node.js", "React"], answer: "Node.js" },
+      { question: "Which of these is a cloud service provider?", options: ["AWS", "PHP", "SQL", "Python"], answer: "AWS" },
+      { question: "Which one is used in Data Science?", options: ["NumPy", "Notepad", "React", "CSS"], answer: "NumPy" },
+      { question: "Which is a web browser?", options: ["Google", "Yahoo", "Edge", "Bing"], answer: "Edge" },
+      { question: "What does SQL stand for?", options: ["Structured Query Language", "Simple Query Language", "Sequential Query Logic", "None"], answer: "Structured Query Language" },
+      { question: "Which is a scripting language?", options: ["C", "Python", "Java", "C++"], answer: "Python" },
+      { question: "What is API?", options: ["Application Programming Interface", "Applied Programming Internet", "Advanced Program Integration", "None"], answer: "Application Programming Interface" },
+      { question: "What is an IP address?", options: ["Internet Protocol address", "Internal Program address", "Internet Process address", "None"], answer: "Internet Protocol address" },
+      { question: "Which is NOT a database?", options: ["Oracle", "MySQL", "MongoDB", "HTML"], answer: "HTML" },
+      { question: "Which language is primarily used for Android?", options: ["Swift", "Kotlin", "Python", "JavaScript"], answer: "Kotlin" },
+      { question: "What does HTTP stand for?", options: ["HyperText Transfer Protocol", "HyperText Transmission Protocol", "HyperText Transfer Package", "None"], answer: "HyperText Transfer Protocol" },
+      { question: "What is malware?", options: ["Malicious software", "Malfunctioning software", "Malware", "None"], answer: "Malicious software" },
+      { question: "Which tool is used for version control?", options: ["Git", "Docker", "Kubernetes", "Jenkins"], answer: "Git" },
+      { question: "Which is a programming paradigm?", options: ["Object-oriented", "Procedural", "Functional", "All"], answer: "All" },
+      { question: "Which tag is used for the largest heading in HTML?", options: ["<h1>", "<h6>", "<header>", "<head>"], answer: "<h1>" }
+    ];
+
+    // Select 10 random questions
+    function getRandomQuestions(arr, num) {
+      let shuffled = arr.slice(0);
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled.slice(0, num);
+    }
+
+    const quizForm = document.getElementById("quizForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultDiv = document.getElementById("result");
+
+    const selectedQuestions = getRandomQuestions(questions, 15);
+
+    function renderQuiz() {
+      quizForm.innerHTML = "";
+      selectedQuestions.forEach((q, index) => {
+        const div = document.createElement("div");
+        div.classList.add("question");
+        div.style.animationDelay = `${index * 0.1}s`;
+        div.innerHTML = `<p>${index + 1}. ${q.question}</p>`;
+
+        q.options.forEach(option => {
+          const id = `q${index}_${option.replace(/\s+/g, "")}`;
+          div.innerHTML += `
+            <label for="${id}">
+              <input type="radio" id="${id}" name="q${index}" value="${option}" required />
+              ${option}
+            </label>
+          `;
+        });
+        quizForm.appendChild(div);
+      });
+    }
+
+    renderQuiz();
+
+    function submitQuiz() {
+      // Prevent multiple submits
+      if (submitBtn.classList.contains("loading")) return;
+
+      submitBtn.classList.add("loading");
+      submitBtn.textContent = "Processing...";
+      resultDiv.style.display = "none";
+
+      // Disable all inputs while processing
+      const inputs = quizForm.querySelectorAll("input");
+      inputs.forEach(input => input.disabled = true);
+
+      let score = 0;
+
+      setTimeout(() => {
+        selectedQuestions.forEach((q, index) => {
+          const selected = quizForm.querySelector(`input[name="q${index}"]:checked`);
+          if (selected && selected.value === q.answer) {
+            score++;
+          }
+        });
+
+        submitBtn.classList.remove("loading");
+        submitBtn.textContent = "Submit Quiz";
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `Your score: <strong>${score} / 10</strong>`;
+
+        // Highlight correct/incorrect
+        Array.from(quizForm.children).forEach((div, index) => {
+          const selected = div.querySelector(`input[name="q${index}"]:checked`);
+          if (selected) {
+            if (selected.value === selectedQuestions[index].answer) {
+              div.classList.add("correct");
+              div.classList.remove("wrong");
+            } else {
+              div.classList.add("wrong");
+              div.classList.remove("correct");
+            }
+          }
+        });
+
+        // Re-enable inputs for retake
+        inputs.forEach(input => input.disabled = false);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
